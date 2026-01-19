@@ -2,7 +2,7 @@
 
 A cross-platform mobile app for tracking Phase 10 card game scores. Built with Expo and React Native.
 
-**[Try it now](https://phase10-cmm.pages.dev)** - Works in your browser, or add to your iPhone homescreen for an app-like experience.
+**[Try it now](https://phase10.antz.me)** - Works in your browser, or add to your iPhone homescreen for an app-like experience.
 
 ## Features
 
