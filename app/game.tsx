@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform, Modal, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { useGameStore } from '../store/gameStore';
@@ -12,6 +12,7 @@ export default function GameScreen() {
   const { currentGame, startScoring, endGame, saveGameForLater } = useGameStore();
   const insets = useSafeAreaInsets();
   const isLandscape = useStableLandscape();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     if (!currentGame) {
@@ -34,6 +35,7 @@ export default function GameScreen() {
   const rankedPlayers = rankPlayers(currentGame.players);
 
   const handleEndGame = () => {
+    setMenuVisible(false);
     if (Platform.OS === 'web') {
       if (window.confirm('Are you sure you want to end this game? It will be saved to your history.')) {
         endGame();
@@ -59,8 +61,14 @@ export default function GameScreen() {
   };
 
   const handleSaveForLater = () => {
+    setMenuVisible(false);
     saveGameForLater();
     router.replace('/');
+  };
+
+  const handleSortPlayers = () => {
+    setMenuVisible(false);
+    router.push('/player-order');
   };
 
   const handleScoreRound = () => {
@@ -88,6 +96,31 @@ export default function GameScreen() {
     </ScrollView>
   );
 
+  const DropdownMenu = () => (
+    <Modal
+      transparent
+      visible={menuVisible}
+      animationType="fade"
+      onRequestClose={() => setMenuVisible(false)}
+    >
+      <Pressable style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
+        <View style={styles.menuContainer}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleSortPlayers}>
+            <Text style={styles.menuItemText}>Sort Players</Text>
+          </TouchableOpacity>
+          <View style={styles.menuDivider} />
+          <TouchableOpacity style={styles.menuItem} onPress={handleSaveForLater}>
+            <Text style={[styles.menuItemText, styles.menuItemSave]}>Save for Later</Text>
+          </TouchableOpacity>
+          <View style={styles.menuDivider} />
+          <TouchableOpacity style={styles.menuItem} onPress={handleEndGame}>
+            <Text style={[styles.menuItemText, styles.menuItemEnd]}>End Game</Text>
+          </TouchableOpacity>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+
   const ControlPanel = () => (
     <View style={[styles.buttonContainer, isLandscape && styles.buttonContainerLandscape]}>
       <TouchableOpacity style={styles.primaryButton} onPress={handleScoreRound}>
@@ -108,14 +141,12 @@ export default function GameScreen() {
         >
           <Text style={styles.secondaryButtonText}>Phases</Text>
         </TouchableOpacity>
-      </View>
 
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveForLater}>
-          <Text style={styles.saveButtonText}>Save for Later</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.endButton} onPress={handleEndGame}>
-          <Text style={styles.endButtonText}>End Game</Text>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => setMenuVisible(true)}
+        >
+          <Text style={styles.secondaryButtonText}>More</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -130,6 +161,7 @@ export default function GameScreen() {
         <View style={[styles.rightPanel, { paddingBottom: insets.bottom }]}>
           <ControlPanel />
         </View>
+        <DropdownMenu />
       </View>
     );
   }
@@ -157,17 +189,16 @@ export default function GameScreen() {
           >
             <Text style={styles.secondaryButtonText}>Phases</Text>
           </TouchableOpacity>
-        </View>
 
-        <View style={styles.bottomButtons}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveForLater}>
-            <Text style={styles.saveButtonText}>Save for Later</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.endButton} onPress={handleEndGame}>
-            <Text style={styles.endButtonText}>End Game</Text>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => setMenuVisible(true)}
+          >
+            <Text style={styles.secondaryButtonText}>More</Text>
           </TouchableOpacity>
         </View>
       </View>
+      <DropdownMenu />
     </View>
   );
 }
@@ -188,17 +219,6 @@ const styles = StyleSheet.create({
   rightPanel: {
     width: 280,
     justifyContent: 'center',
-  },
-  roundHeader: {
-    padding: 16,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#0f3460',
-  },
-  roundText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#e94560',
   },
   playersList: {
     flex: 1,
@@ -289,25 +309,35 @@ const styles = StyleSheet.create({
     color: '#a0a0a0',
     fontSize: 16,
   },
-  bottomButtons: {
-    flexDirection: 'row',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    gap: 24,
-  },
-  saveButton: {
-    paddingVertical: 12,
     alignItems: 'center',
   },
-  saveButtonText: {
+  menuContainer: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    minWidth: 200,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  menuItemText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  menuItemSave: {
     color: '#4ade80',
-    fontSize: 14,
   },
-  endButton: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  endButtonText: {
+  menuItemEnd: {
     color: '#e94560',
-    fontSize: 14,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: '#0f3460',
   },
 });

@@ -95,6 +95,12 @@ export default function RootLayout() {
             title: 'Saved Games',
           }}
         />
+        <Stack.Screen
+          name="player-order"
+          options={{
+            title: 'Player Order',
+          }}
+        />
       </Stack>
     </SafeAreaProvider>
   );

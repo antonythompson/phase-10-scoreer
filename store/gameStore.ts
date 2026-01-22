@@ -42,6 +42,9 @@ interface GameState {
 
   // Round editing
   updateRoundScore: (playerId: string, round: number, score: number, phaseCompleted: boolean) => void;
+
+  // Player ordering
+  reorderPlayers: (fromIndex: number, toIndex: number) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -317,6 +320,28 @@ export const useGameStore = create<GameState>()(
             currentPhase,
           };
         });
+
+        set({
+          currentGame: {
+            ...currentGame,
+            players: updatedPlayers,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      },
+
+      reorderPlayers: (fromIndex: number, toIndex: number) => {
+        const { currentGame } = get();
+        if (!currentGame) return;
+        if (fromIndex < 0 || fromIndex >= currentGame.players.length) return;
+        if (toIndex < 0 || toIndex >= currentGame.players.length) return;
+        if (fromIndex === toIndex) return;
+
+        const updatedPlayers = [...currentGame.players];
+        [updatedPlayers[fromIndex], updatedPlayers[toIndex]] = [
+          updatedPlayers[toIndex],
+          updatedPlayers[fromIndex],
+        ];
 
         set({
           currentGame: {
