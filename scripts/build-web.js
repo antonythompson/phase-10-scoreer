@@ -49,3 +49,8 @@ html = html.replace(
 
 fs.writeFileSync(indexPath, html);
 console.log('PWA support added to index.html');
+
+// Create _redirects file for Cloudflare Pages SPA routing
+const redirectsPath = path.join(distDir, '_redirects');
+fs.writeFileSync(redirectsPath, '/* /index.html 200\n');
+console.log('Created _redirects for SPA routing');
