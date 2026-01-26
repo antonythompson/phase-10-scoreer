@@ -158,10 +158,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   phaseNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#e94560',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1a1a2e',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   phaseNumberText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#e94560',
   },
   phaseTitle: {
     fontSize: 18,
