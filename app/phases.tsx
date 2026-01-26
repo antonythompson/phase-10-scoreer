@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PHASES } from '../constants/phases';
 import { useGameStore } from '../store/gameStore';
@@ -8,11 +9,22 @@ export default function PhasesScreen() {
   const insets = useSafeAreaInsets();
   const isLandscape = useStableLandscape();
   const { currentGame } = useGameStore();
+  const [showAllPhases, setShowAllPhases] = useState(false);
 
   const getPlayersOnPhase = (phaseNumber: number) => {
     if (!currentGame) return [];
     return currentGame.players.filter((p) => p.currentPhase === phaseNumber);
   };
+
+  // Get phases that have at least one player on them
+  const activePhasesSet = new Set(
+    currentGame?.players.map((p) => p.currentPhase) ?? []
+  );
+
+  // Filter phases based on toggle
+  const displayedPhases = showAllPhases
+    ? PHASES
+    : PHASES.filter((phase) => activePhasesSet.has(phase.number));
 
   return (
     <ScrollView
@@ -26,11 +38,21 @@ export default function PhasesScreen() {
         }
       ]}
     >
-      <Text style={styles.intro}>
-        Complete each phase in order. You must complete your current phase before moving to the next.
-      </Text>
+      <Pressable
+        style={styles.toggleContainer}
+        onPress={() => setShowAllPhases(!showAllPhases)}
+      >
+        <View style={[styles.checkbox, showAllPhases && styles.checkboxChecked]}>
+          {showAllPhases && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+        <Text style={styles.toggleLabel}>Show all phases</Text>
+      </Pressable>
 
-      {PHASES.map((phase) => {
+      {!showAllPhases && displayedPhases.length === 0 && (
+        <Text style={styles.emptyText}>No active phases to display</Text>
+      )}
+
+      {displayedPhases.map((phase) => {
         const playersOnPhase = getPlayersOnPhase(phase.number);
         return (
           <View key={phase.number} style={styles.phaseCard}>
@@ -40,7 +62,9 @@ export default function PhasesScreen() {
               </View>
               <Text style={styles.phaseTitle}>{phase.description}</Text>
             </View>
-            <Text style={styles.phaseRequirement}>{phase.requirement}</Text>
+            {showAllPhases && (
+              <Text style={styles.phaseRequirement}>{phase.requirement}</Text>
+            )}
             {playersOnPhase.length > 0 && (
               <View style={styles.playersOnPhase}>
                 {playersOnPhase.map((player) => (
@@ -87,11 +111,40 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
-  intro: {
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#a0a0a0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: '#e94560',
+    borderColor: '#e94560',
+  },
+  checkmark: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  toggleLabel: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  emptyText: {
     fontSize: 14,
     color: '#a0a0a0',
-    marginBottom: 20,
-    lineHeight: 20,
+    textAlign: 'center',
+    marginVertical: 20,
   },
   phaseCard: {
     backgroundColor: '#0f3460',
